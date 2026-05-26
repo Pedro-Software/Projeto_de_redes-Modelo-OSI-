@@ -1,33 +1,106 @@
-const USER_NAME = 'gleydson.brito'
+import * as storage from './storage.js'
 
-const user = document.querySelector('.user')
-user.textContent = `Usuário: ${USER_NAME}`
+export const USER_NAME = 'Pedro Henrique'
+const packetStore = new Map()
 
-const reqBtn = document.querySelector('.request-btn')
-reqBtn.addEventListener('click', function(event) {
-  event.preventDefault()
-  const protocolName = document.querySelector('.protocol-name')
-  const reqText = document.querySelector('.text-input')
-  const requestText = reqText.value
- 
-  if(requestText.includes('@')) {
-    protocolName.textContent = 'SMTP/POP'
-  } else if (requestText.includes('www')) {
-    protocolName.textContent = 'HTTP/HTTPS'
-  } else {
-    protocolName.textContent = 'WEBSOCKET'
+export function detectProtocol(requestText, hasFile) {
+  if (requestText) {
+    if (requestText.includes('@')) return 'email'
+    if (requestText.includes('www') || requestText.includes('http')) return 'http'
+    return 'chat'
   }
-  reqText.value = ''
-})
+  if (hasFile) return 'file'
+  return null
+}
 
-const inputFile = document.querySelector('#arquivo')
-inputFile.addEventListener('change', () => {
-  if(inputFile.files.length > 0) {
-    const file = inputFile.files[0]
-    alert(file.name)
+export function getProtocolLabel(type) {
+  switch (type) {
+    case 'email':
+      return 'E-mail (SMTP/POP)'
+    case 'http':
+      return 'Site / URL (HTTP/HTTPS)'
+    case 'chat':
+      return 'Chat (WebSocket)'
+    case 'file':
+      return 'Arquivo (FTP)'
+    default:
+      return ''
   }
-})
+}
 
-inputFile.addEventListener('cancel', () => {
-  alert('Cancelado')
-})
+function formatTimestamp() {
+  return new Date().toISOString()
+}
+
+function generatePacketKey() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  return `pkt-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+function registerPacket(packet) {
+  packetStore.set(packet.key, packet)
+  storage.savePacketKey(packet.key)
+  return packet
+}
+
+export function loadLastPacketKey() {
+  return storage.loadLastPacketKey()
+}
+
+export function getPacketByKey(key) {
+  return packetStore.get(key) || null
+}
+
+export function createEmailPacket(remetente, destinatario, assunto, corpo) {
+  const packet = {
+    key: generatePacketKey(),
+    tipo: 'email',
+    remetente,
+    destinatario,
+    assunto,
+    corpo,
+    protocolo: 'SMTP',
+    timestamp: formatTimestamp()
+  }
+  return registerPacket(packet)
+}
+
+export function createHttpPacket(hostIP, usuario) {
+  const packet = {
+    key: generatePacketKey(),
+    tipo: 'http_request',
+    metodo: 'GET',
+    hostIP,
+    protocolo: 'HTTP/HTTPS',
+    usuario,
+    timestamp: formatTimestamp()
+  }
+  return registerPacket(packet)
+}
+
+export function createChatPacket(mensagem, usuario) {
+  const packet = {
+    key: generatePacketKey(),
+    tipo: 'chat',
+    usuario,
+    mensagem,
+    protocolo: 'WebSocket',
+    timestamp: formatTimestamp()
+  }
+  return registerPacket(packet)
+}
+
+export function createFilePacket(nomeArquivo, formato, remetente) {
+  const packet = {
+    key: generatePacketKey(),
+    tipo: 'arquivo',
+    nomeArquivo,
+    formato,
+    remetente,
+    protocolo: 'FTP',
+    timestamp: formatTimestamp()
+  }
+  return registerPacket(packet)
+}
