@@ -216,9 +216,18 @@ const TYPE_LABELS = {
   arquivo: { number: 4, label: 'ARQUIVOS', varName: 'arquivo' }
 }
 
-function encodeBase64(value) {
+function encryptCaesarCipher(value, shift = 3) {
   if (!value) return ''
-  return btoa(unescape(encodeURIComponent(String(value))))
+  return String(value).split('').map(char => {
+    const code = char.charCodeAt(0)
+    if (code >= 65 && code <= 90) {
+      return String.fromCharCode(((code - 65 + shift) % 26) + 65)
+    }
+    if (code >= 97 && code <= 122) {
+      return String.fromCharCode(((code - 97 + shift) % 26) + 97)
+    }
+    return char
+  }).join('')
 }
 
 function escapeHtml(text) {
@@ -229,9 +238,9 @@ function escapeHtml(text) {
 
 function buildCodeLine(prop, value, isSensitive, isLast) {
   const comma = isLast ? '' : '<span class="syn-comma">,</span>'
-  const displayValue = escapeHtml(isSensitive ? encodeBase64(value) : String(value))
+  const displayValue = escapeHtml(isSensitive ? encryptCaesarCipher(value) : String(value))
   const stringClass = isSensitive ? 'syn-string-encrypted' : 'syn-string'
-  const badge = isSensitive ? ' <span class="encryption-badge">🔒 Base64</span>' : ''
+  const badge = isSensitive ? ' <span class="encryption-badge">🔒 Cifra de César</span>' : ''
 
   return `  <span class="syn-prop">${escapeHtml(prop)}</span>: <span class="${stringClass}">'${displayValue}'</span>${badge}${comma}`
 }
