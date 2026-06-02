@@ -12,9 +12,15 @@ function processPacket(packet) {
 function handleRequest(event) {
   event.preventDefault()
 
+  const isFileChange = event.target && event.target.id === 'arquivo'
+  if (isFileChange) {
+    const textInput = document.querySelector('.text-input')
+    if (textInput) textInput.value = ''
+  }
+
   const requestText = presentation.getRequestText()
   const file = presentation.getSelectedFile()
-  const protocolType = application.detectProtocol(requestText, !!file)
+  const protocolType = isFileChange ? 'file' : application.detectProtocol(requestText, !!file)
 
   if (!protocolType) {
     presentation.showAlert('Por favor, digite algo ou selecione um arquivo.')
@@ -52,10 +58,18 @@ function handleRequest(event) {
     presentation.renderFileForm(file, application.USER_NAME, formData => {
       const packet = application.createFilePacket(formData.nomeArquivo, formData.formato, formData.remetente)
       processPacket(packet)
+      const fileInput = document.querySelector('#arquivo')
+      if (fileInput) fileInput.value = ''
     })
+
+    const form = document.getElementById('dynamic-form')
+    if (form) {
+      form.requestSubmit()
+    }
     return
   }
 }
 
 presentation.initializeUI(application.USER_NAME)
 presentation.onRequestClick(handleRequest)
+presentation.onFileChange(handleRequest)

@@ -193,6 +193,10 @@ export function onRequestClick(handler) {
   if (reqBtn) reqBtn.addEventListener('click', handler)
 }
 
+export function onFileChange(handler) {
+  if (inputFile) inputFile.addEventListener('change', handler)
+}
+
 /* ===== Camada de Apresentação ===== */
 
 const SENSITIVE_FIELDS = {
