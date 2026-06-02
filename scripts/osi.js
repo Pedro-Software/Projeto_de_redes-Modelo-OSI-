@@ -2,7 +2,7 @@ import * as application from './application.js'
 import * as presentation from './presentation.js'
 
 function processPacket(packet) {
-  presentation.clearUI()
+  presentation.renderPresentationLayer(packet)
   const savedKey = application.loadLastPacketKey()
   if (savedKey) {
     console.log('Packet key saved in localStorage:', savedKey)
@@ -21,6 +21,7 @@ function handleRequest(event) {
     return
   }
 
+  presentation.clearPresentationLayer()
   presentation.renderProtocolName(application.getProtocolLabel(protocolType))
 
   if (protocolType === 'email') {

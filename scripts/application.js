@@ -70,10 +70,10 @@ export function createEmailPacket(remetente, destinatario, assunto, corpo) {
 export function createHttpPacket(hostIP, usuario) {
   const packet = {
     key: generatePacketKey(),
-    tipo: 'http_request',
+    tipo: 'site',
     metodo: 'GET',
     hostIP,
-    protocolo: 'HTTP/HTTPS',
+    protocolo: 'HTTP',
     usuario,
     timestamp: formatTimestamp()
   }
@@ -99,7 +99,7 @@ export function createFilePacket(nomeArquivo, formato, remetente) {
     nomeArquivo,
     formato,
     remetente,
-    protocolo: 'FTP',
+    protocolo: 'HTTP Upload',
     timestamp: formatTimestamp()
   }
   return registerPacket(packet)

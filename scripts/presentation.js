@@ -4,6 +4,9 @@ const reqText = document.querySelector('.text-input')
 const inputFile = document.querySelector('#arquivo')
 const protocolName = document.querySelector('.protocol-name')
 const formContainer = document.querySelector('.form-container')
+const presentationContainer = document.querySelector('.presentation-container')
+const applicationSection = document.querySelector('.application-layer-section')
+const presentationSection = document.querySelector('.presentation-layer-section')
 
 export function initializeUI(userName) {
   if (user) user.textContent = `Usuário: ${userName}`
@@ -23,9 +26,15 @@ export function renderProtocolName(text) {
 
 export function clearUI() {
   if (formContainer) formContainer.innerHTML = ''
+  if (applicationSection) applicationSection.classList.add('hidden')
   if (reqText) reqText.value = ''
   if (inputFile) inputFile.value = ''
   renderProtocolName('')
+  clearPresentationLayer()
+}
+
+function showApplicationLayer() {
+  if (applicationSection) applicationSection.classList.remove('hidden')
 }
 
 export function showAlert(message) {
@@ -39,6 +48,7 @@ function attachFormSubmit(handler) {
 
 export function renderEmailForm(remetente, usuario, onSubmit) {
   if (!formContainer) return
+  showApplicationLayer()
   formContainer.innerHTML = `
     <form id="dynamic-form" class="dynamic-form">
       <h3>Novo E-mail</h3>
@@ -82,6 +92,7 @@ export function renderEmailForm(remetente, usuario, onSubmit) {
 
 export function renderHttpForm(hostIP, usuario, onSubmit) {
   if (!formContainer) return
+  showApplicationLayer()
   formContainer.innerHTML = `
     <form id="dynamic-form" class="dynamic-form">
       <h3>Requisição de Site</h3>
@@ -113,6 +124,7 @@ export function renderHttpForm(hostIP, usuario, onSubmit) {
 
 export function renderChatForm(mensagem, usuario, onSubmit) {
   if (!formContainer) return
+  showApplicationLayer()
   formContainer.innerHTML = `
     <form id="dynamic-form" class="dynamic-form">
       <h3>Mensagem de Chat</h3>
@@ -140,6 +152,7 @@ export function renderChatForm(mensagem, usuario, onSubmit) {
 
 export function renderFileForm(file, usuario, onSubmit) {
   if (!formContainer || !file) return
+  showApplicationLayer()
   const fileName = file.name
   const fileExt = fileName.includes('.') ? fileName.split('.').pop().toUpperCase() : 'DESCONHECIDO'
 
@@ -178,4 +191,86 @@ export function renderFileForm(file, usuario, onSubmit) {
 
 export function onRequestClick(handler) {
   if (reqBtn) reqBtn.addEventListener('click', handler)
+}
+
+/* ===== Camada de Apresentação ===== */
+
+const SENSITIVE_FIELDS = {
+  chat: ['usuario', 'mensagem'],
+  site: ['hostIP', 'usuario'],
+  email: ['remetente', 'destinatario', 'assunto', 'corpo'],
+  arquivo: ['nomeArquivo', 'remetente']
+}
+
+const DISPLAY_FIELDS = {
+  chat: ['tipo', 'usuario', 'mensagem', 'protocolo', 'timestamp'],
+  site: ['tipo', 'metodo', 'hostIP', 'protocolo', 'usuario', 'timestamp'],
+  email: ['remetente', 'destinatario', 'assunto', 'corpo', 'protocolo', 'timestamp'],
+  arquivo: ['nomeArquivo', 'formato', 'remetente', 'protocolo', 'timestamp']
+}
+
+const TYPE_LABELS = {
+  chat: { number: 1, label: 'CHAT', varName: 'chat' },
+  site: { number: 2, label: 'SITES', varName: 'requisicaoSite' },
+  email: { number: 3, label: 'E-MAIL', varName: 'email' },
+  arquivo: { number: 4, label: 'ARQUIVOS', varName: 'arquivo' }
+}
+
+function encodeBase64(value) {
+  if (!value) return ''
+  return btoa(unescape(encodeURIComponent(String(value))))
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
+}
+
+function buildCodeLine(prop, value, isSensitive, isLast) {
+  const comma = isLast ? '' : '<span class="syn-comma">,</span>'
+  const displayValue = escapeHtml(isSensitive ? encodeBase64(value) : String(value))
+  const stringClass = isSensitive ? 'syn-string-encrypted' : 'syn-string'
+  const badge = isSensitive ? ' <span class="encryption-badge">🔒 Base64</span>' : ''
+
+  return `  <span class="syn-prop">${escapeHtml(prop)}</span>: <span class="${stringClass}">'${displayValue}'</span>${badge}${comma}`
+}
+
+export function renderPresentationLayer(packet) {
+  if (!presentationContainer) return
+
+  const tipo = packet.tipo
+  const meta = TYPE_LABELS[tipo]
+  if (!meta) return
+
+  const sensitiveList = SENSITIVE_FIELDS[tipo] || []
+  const fieldsToShow = DISPLAY_FIELDS[tipo] || []
+
+  const lines = fieldsToShow.map((prop, i) => {
+    const isSensitive = sensitiveList.includes(prop)
+    const isLast = i === fieldsToShow.length - 1
+    return buildCodeLine(prop, packet[prop], isSensitive, isLast)
+  })
+
+  const codeHTML = `<span class="syn-keyword">const</span> <span class="syn-var-name">${escapeHtml(meta.varName)}</span> <span class="syn-brace">=</span> <span class="syn-brace">{</span>
+${lines.join('\n')}
+<span class="syn-brace">}</span><span class="syn-semicolon">;</span>`
+
+  const cardHTML = `
+    <div class="presentation-card">
+      <div class="presentation-card-header">
+        <span class="presentation-card-number">${meta.number}</span>
+        <span class="presentation-card-type">${escapeHtml(meta.label)}</span>
+      </div>
+      <pre class="presentation-code-block">${codeHTML}</pre>
+    </div>
+  `
+
+  presentationContainer.innerHTML = cardHTML
+  if (presentationSection) presentationSection.classList.remove('hidden')
+}
+
+export function clearPresentationLayer() {
+  if (presentationContainer) presentationContainer.innerHTML = ''
+  if (presentationSection) presentationSection.classList.add('hidden')
 }
