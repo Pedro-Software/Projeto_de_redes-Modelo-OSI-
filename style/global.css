@@ -1,13 +1,61 @@
-html {
-  font-family: "Poppins", sans-serif;
-  font-weight: 400;
-  font-style: normal;
+:root {
+  --bg-primary: #070312;
+  --bg-secondary: #0f0923;
+  --bg-panel: rgba(18, 10, 36, 0.75);
+  --color-primary: #00f0ff; /* Ciano Neon */
+  --color-primary-glow: rgba(0, 240, 255, 0.4);
+  --color-secondary: #d946ef; /* Roxo/Magenta Neon */
+  --color-secondary-glow: rgba(217, 70, 239, 0.4);
+  --color-accent: #f5be58; /* Dourado/Âmbar */
+  --color-accent-glow: rgba(245, 190, 88, 0.4);
+  --color-text: #f1f5f9; /* Texto claro */
+  --color-text-muted: #94a3b8; /* Texto secundário */
+  --color-green: #39ff14; /* Verde Terminal */
+  --color-green-glow: rgba(57, 255, 20, 0.4);
+  --color-red: #f43f5e; /* Vermelho/Rosa Alerta */
+  --color-red-glow: rgba(244, 63, 94, 0.4);
+  --border-cyber: 1px solid rgba(0, 240, 255, 0.25);
+  --border-cyber-accent: 1px solid rgba(245, 190, 88, 0.25);
+  --font-cyber: 'Audiowide', cursive, sans-serif;
+  --font-text: 'Poppins', sans-serif;
+  --font-mono: 'Courier New', Courier, monospace;
 }
 
-iframe {
-  color: #079ea6;
-  color: #1e0c42;
-  color: #f0077b;
-  color: #f5be58;
-  color: #e3e0b3;
+html {
+  font-family: var(--font-text);
+  font-weight: 400;
+  font-style: normal;
+  background-color: var(--bg-primary);
+  color: var(--color-text);
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Scrollbar Customizado */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+  box-shadow: 0 0 10px var(--color-primary);
 }
