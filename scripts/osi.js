@@ -1,8 +1,12 @@
 import * as application from './application.js'
 import * as presentation from './presentation.js'
+import * as session from './session.js'
 
-function processPacket(packet) {
-  presentation.renderPresentationLayer(packet)
+async function processPacket(packet) {
+  const presentationPacket = await presentation.renderPresentationLayer(packet)
+  if (presentationPacket) {
+    session.renderSessionLayer(presentationPacket)
+  }
   const savedKey = application.loadLastPacketKey()
   if (savedKey) {
     console.log('Packet key saved in localStorage:', savedKey)
@@ -28,6 +32,7 @@ function handleRequest(event) {
   }
 
   presentation.clearPresentationLayer()
+  session.clearSessionLayer()
   presentation.renderProtocolName(application.getProtocolLabel(protocolType))
 
   if (protocolType === 'email') {

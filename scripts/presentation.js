@@ -197,7 +197,7 @@ export function onFileChange(handler) {
   if (inputFile) inputFile.addEventListener('change', handler)
 }
 
-/* ===== Camada de Apresentação ===== */
+/* ===== Camada de Apresentação — JWT ===== */
 
 const SENSITIVE_FIELDS = {
   chat: ['usuario', 'mensagem'],
@@ -220,19 +220,50 @@ const TYPE_LABELS = {
   arquivo: { number: 4, label: 'ARQUIVOS', varName: 'arquivo' }
 }
 
-function encryptCaesarCipher(value, shift = 3) {
-  if (!value) return ''
-  return String(value).split('').map(char => {
-    const code = char.charCodeAt(0)
-    if (code >= 65 && code <= 90) {
-      return String.fromCharCode(((code - 65 + shift) % 26) + 65)
-    }
-    if (code >= 97 && code <= 122) {
-      return String.fromCharCode(((code - 97 + shift) % 26) + 97)
-    }
-    return char
-  }).join('')
+/* --- JWT helpers --- */
+
+let _joseModule = null
+
+async function loadJose() {
+  if (!_joseModule) {
+    _joseModule = await import('https://cdn.jsdelivr.net/npm/jose@6/+esm')
+  }
+  return _joseModule
 }
+
+async function generateJWT(packet, sensitiveFields) {
+  const { SignJWT } = await loadJose()
+
+  const secret = new TextEncoder().encode('chave-secreta-didatica-osi')
+
+  const payload = {}
+  for (const field of sensitiveFields) {
+    if (packet[field] !== undefined) {
+      payload[field] = packet[field]
+    }
+  }
+
+  const token = await new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('30m')
+    .sign(secret)
+
+  return token
+}
+
+function decodeJWTParts(token) {
+  try {
+    const parts = token.split('.')
+    const header = JSON.parse(atob(parts[0]))
+    const payload = JSON.parse(atob(parts[1]))
+    return { header, payload }
+  } catch {
+    return { header: {}, payload: {} }
+  }
+}
+
+/* --- Rendering helpers --- */
 
 function escapeHtml(text) {
   const div = document.createElement('div')
@@ -240,32 +271,48 @@ function escapeHtml(text) {
   return div.innerHTML
 }
 
-function buildCodeLine(prop, value, isSensitive, isLast) {
+function buildPresentationCodeLine(prop, value, isLast) {
   const comma = isLast ? '' : '<span class="syn-comma">,</span>'
-  const displayValue = escapeHtml(isSensitive ? encryptCaesarCipher(value) : String(value))
-  const stringClass = isSensitive ? 'syn-string-encrypted' : 'syn-string'
-  const badge = isSensitive ? ' <span class="encryption-badge">🔒 Cifra de César</span>' : ''
+  const displayValue = escapeHtml(String(value))
+
+  const isJWT = prop === 'dadosProtegidosJWT'
+  const stringClass = isJWT ? 'syn-string-encrypted' : 'syn-string'
+  const badge = isJWT ? ' <span class="jwt-badge">🔒 Token JWT</span>' : ''
 
   return `  <span class="syn-prop">${escapeHtml(prop)}</span>: <span class="${stringClass}">'${displayValue}'</span>${badge}${comma}`
 }
 
-export function renderPresentationLayer(packet) {
-  if (!presentationContainer) return
+export async function renderPresentationLayer(packet) {
+  if (!presentationContainer) return null
 
   const tipo = packet.tipo
   const meta = TYPE_LABELS[tipo]
-  if (!meta) return
+  if (!meta) return null
 
   const sensitiveList = SENSITIVE_FIELDS[tipo] || []
-  const fieldsToShow = DISPLAY_FIELDS[tipo] || []
 
-  const lines = fieldsToShow.map((prop, i) => {
-    const isSensitive = sensitiveList.includes(prop)
-    const isLast = i === fieldsToShow.length - 1
-    return buildCodeLine(prop, packet[prop], isSensitive, isLast)
+  // Generate JWT with sensitive fields
+  const tokenJWT = await generateJWT(packet, sensitiveList)
+  const { header, payload } = decodeJWTParts(tokenJWT)
+
+  // Build the presentation object to display
+  const apresentacao = {
+    tipo: packet.tipo,
+    protocolo: packet.protocolo,
+    dadosProtegidosJWT: tokenJWT,
+    timestamp: packet.timestamp
+  }
+
+  const fields = Object.keys(apresentacao)
+  const lines = fields.map((prop, i) => {
+    const isLast = i === fields.length - 1
+    const value = prop === 'dadosProtegidosJWT'
+      ? tokenJWT.substring(0, 40) + '...'
+      : apresentacao[prop]
+    return buildPresentationCodeLine(prop, value, isLast)
   })
 
-  const codeHTML = `<span class="syn-keyword">const</span> <span class="syn-var-name">${escapeHtml(meta.varName)}</span> <span class="syn-brace">=</span> <span class="syn-brace">{</span>
+  const codeHTML = `<span class="syn-keyword">const</span> <span class="syn-var-name">apresentacao</span> <span class="syn-brace">=</span> <span class="syn-brace">{</span>
 ${lines.join('\n')}
 <span class="syn-brace">}</span><span class="syn-semicolon">;</span>`
 
@@ -276,11 +323,51 @@ ${lines.join('\n')}
         <span class="presentation-card-type">${escapeHtml(meta.label)}</span>
       </div>
       <pre class="presentation-code-block">${codeHTML}</pre>
+
+      <div class="jwt-details-section">
+        <div class="jwt-detail-block">
+          <div class="jwt-detail-label">
+            <span class="jwt-detail-icon">📋</span> Header do JWT
+          </div>
+          <pre class="jwt-detail-code">${escapeHtml(JSON.stringify(header, null, 2))}</pre>
+        </div>
+
+        <div class="jwt-detail-block">
+          <div class="jwt-detail-label">
+            <span class="jwt-detail-icon">📦</span> Payload decodificado <span class="jwt-didactic-tag">didático</span>
+          </div>
+          <pre class="jwt-detail-code">${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
+        </div>
+
+        <div class="jwt-detail-block">
+          <div class="jwt-detail-label">
+            <span class="jwt-detail-icon">🔐</span> Token JWT completo
+          </div>
+          <div class="jwt-token-display"><code>${escapeHtml(tokenJWT)}</code></div>
+        </div>
+      </div>
+
+      <div class="jwt-note">
+        <span class="jwt-note-icon">🛡️</span>
+        Os dados sensíveis foram encapsulados em um JWT assinado, simulando a preparação dos dados na Camada de Apresentação.
+      </div>
     </div>
   `
 
   presentationContainer.innerHTML = cardHTML
   if (presentationSection) presentationSection.classList.remove('hidden')
+
+  // Return the presentation packet for the next layer
+  const presentationPacket = {
+    tipo: packet.tipo,
+    protocolo: packet.protocolo,
+    tokenJWT: tokenJWT,
+    timestamp: packet.timestamp,
+    origem: packet.usuario || packet.remetente || 'Pedro Henrique',
+    dadosOriginais: packet
+  }
+
+  return presentationPacket
 }
 
 export function clearPresentationLayer() {
