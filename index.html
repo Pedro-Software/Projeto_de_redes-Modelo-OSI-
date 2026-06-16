@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR" data-theme="cyber">
 
 <head>
   <meta charset="UTF-8">
@@ -27,12 +27,22 @@
       <img class="osi-img" src="./assets/osi-icon.webp" alt="OSI Icon">
       <div class="header-text">
         <h1 class="title">SIMULADOR OSI</h1>
-        <p class="subtitle">Laboratório de Redes & Segurança Cibernética</p>
+        <p class="subtitle">Laboratório de Redes & Segurança Cibernética com web / IFPE / Professor Gleidson</p>
       </div>
     </div>
-    <div class="user-status-badge">
-      <span class="pulse-led"></span>
-      <p class="user"></p>
+    <div class="header-right" style="display: flex; align-items: center; gap: 1.5rem;">
+      <div class="user-status-badge">
+        <span class="pulse-led"></span>
+        <p class="user"></p>
+      </div>
+      <div class="theme-switcher-container" style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem;">
+        <span class="theme-label" style="font-size: 0.65rem; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px; user-select: none;">Temas de cores</span>
+        <div class="theme-switcher">
+          <button class="theme-btn active" data-theme="cyber" title="Tema Cyber">⚡</button>
+          <button class="theme-btn" data-theme="dark" title="Tema Dark">🌑</button>
+          <button class="theme-btn" data-theme="light" title="Tema Light">☀️</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -89,9 +99,55 @@
         </div>
         <div class="session-container"></div>
       </section>
-    </div>
-    </div>
-    </div>
+
+      <!-- Camada 4 — Transporte -->
+      <section class="layer-section transport-layer-section hidden">
+        <div class="layer-header">
+          <span class="layer-number">4</span>
+          <h2 class="layer-title">Camada de Transporte</h2>
+          <span class="layer-status transport">TCP: ATIVO</span>
+        </div>
+        <div class="transport-container"></div>
+      </section>
+
+      <!-- Camada 3 — Rede -->
+      <section class="layer-section network-layer-section hidden">
+        <div class="layer-header">
+          <span class="layer-number">3</span>
+          <h2 class="layer-title">Camada de Rede</h2>
+          <span class="layer-status network">ROTEAMENTO: ATIVO</span>
+        </div>
+
+        <div class="network-controls">
+          <div class="network-controls-row">
+            <div class="network-control-group">
+              <label class="network-control-label" for="select-origem">📍 Roteador de Origem</label>
+              <select id="select-origem" class="network-select"></select>
+            </div>
+            <div class="network-control-group">
+              <label class="network-control-label" for="select-destino">🎯 Roteador de Destino</label>
+              <select id="select-destino" class="network-select"></select>
+            </div>
+            <div class="network-control-group">
+              <label class="network-control-label" for="select-algoritmo">⚙️ Algoritmo</label>
+              <select id="select-algoritmo" class="network-select">
+                <option value="dijkstra">Dijkstra (Caminho Ótimo)</option>
+                <option value="greedy">Greedy / Guloso (Best-First)</option>
+              </select>
+            </div>
+          </div>
+          <button id="btn-calcular-rota" class="network-route-btn">Calcular Rota</button>
+        </div>
+
+        <div class="network-container"></div>
+
+        <div class="network-canvas-wrapper" style="display: none;">
+          <canvas id="network-canvas"></canvas>
+          <div class="canvas-legend"></div>
+        </div>
+
+        <div class="network-comparison"></div>
+      </section>
     </div>
   </main>
 

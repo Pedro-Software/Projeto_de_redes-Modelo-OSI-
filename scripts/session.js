@@ -19,7 +19,7 @@ function buildSessionCodeLine(prop, value, isHighlight, isLast) {
 }
 
 export function renderSessionLayer(presentationPacket) {
-  if (!sessionContainer) return
+  if (!sessionContainer) return null
 
   const now = new Date()
   const expiry = new Date(now.getTime() + 30 * 60 * 1000)
@@ -74,6 +74,13 @@ ${lines.join('\n')}
 
   sessionContainer.innerHTML = cardHTML
   if (sessionSection) sessionSection.classList.remove('hidden')
+
+  // Retorna o pacote de sessão para a próxima camada (Transporte)
+  return {
+    ...sessao,
+    protocolo: presentationPacket.protocolo,
+    dadosOriginais: presentationPacket
+  }
 }
 
 export function clearSessionLayer() {

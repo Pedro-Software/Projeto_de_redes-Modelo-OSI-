@@ -2,12 +2,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--bg-panel);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: var(--header-bg);
+  backdrop-filter: var(--backdrop-filter, blur(12px));
+  -webkit-backdrop-filter: var(--backdrop-filter, blur(12px));
   padding: 1.2rem 3rem;
-  border-bottom: 2px solid var(--color-primary);
-  box-shadow: 0 4px 30px rgba(0, 240, 255, 0.15);
+  border-bottom: 2px solid var(--border-color);
+  box-shadow: 0 4px 30px var(--border-color);
   position: relative;
   z-index: 10;
 }
@@ -38,7 +38,7 @@
 }
 
 .title {
-  color: #fff;
+  color: var(--color-text);
   font-family: var(--font-cyber);
   font-size: 2rem;
   font-weight: 700;
@@ -90,6 +90,7 @@
     opacity: 0.4;
     box-shadow: 0 0 4px var(--color-green);
   }
+
   to {
     opacity: 1;
     box-shadow: 0 0 12px var(--color-green);
@@ -117,4 +118,28 @@
   .user-status-badge {
     align-self: center;
   }
+}
+
+.theme-switcher {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.theme-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  color: var(--color-text-muted);
+}
+
+.theme-btn:hover,
+.theme-btn.active {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  box-shadow: 0 0 8px var(--border-color);
 }

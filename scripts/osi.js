@@ -1,11 +1,47 @@
 import * as application from './application.js'
 import * as presentation from './presentation.js'
 import * as session from './session.js'
+import * as transport from './transport.js'
+import * as network from './network.js'
+import { initTheme } from './theme.js'
 
 async function processPacket(packet) {
   const presentationPacket = await presentation.renderPresentationLayer(packet)
   if (presentationPacket) {
-    session.renderSessionLayer(presentationPacket)
+    const sessionPacket = session.renderSessionLayer(presentationPacket)
+
+    // Camada 4 — Transporte
+    if (sessionPacket) {
+      const transportPacket = transport.renderTransportLayer(sessionPacket)
+
+      // Camada 3 — Rede (mostra a seção e popula os selects)
+      if (transportPacket) {
+        const networkSection = document.querySelector('.network-layer-section')
+        if (networkSection) networkSection.classList.remove('hidden')
+        network.popularControles()
+
+        // Configura o botão de calcular rota
+        const btnCalcRota = document.getElementById('btn-calcular-rota')
+        if (btnCalcRota) {
+          // Remove listeners antigos clonando o botão
+          const novoBotao = btnCalcRota.cloneNode(true)
+          btnCalcRota.parentNode.replaceChild(novoBotao, btnCalcRota)
+
+          novoBotao.addEventListener('click', () => {
+            const origemId = document.getElementById('select-origem').value
+            const destinoId = document.getElementById('select-destino').value
+            const algoritmo = document.getElementById('select-algoritmo').value
+
+            if (origemId === destinoId) {
+              alert('Selecione roteadores de origem e destino diferentes.')
+              return
+            }
+
+            network.renderNetworkLayer(transportPacket, origemId, destinoId, algoritmo)
+          })
+        }
+      }
+    }
   }
   const savedKey = application.loadLastPacketKey()
   if (savedKey) {
@@ -33,6 +69,8 @@ function handleRequest(event) {
 
   presentation.clearPresentationLayer()
   session.clearSessionLayer()
+  transport.clearTransportLayer()
+  network.clearNetworkLayer()
   presentation.renderProtocolName(application.getProtocolLabel(protocolType))
 
   if (protocolType === 'email') {
@@ -75,6 +113,7 @@ function handleRequest(event) {
   }
 }
 
+initTheme()
 presentation.initializeUI(application.USER_NAME)
 presentation.onRequestClick(handleRequest)
 presentation.onFileChange(handleRequest)
