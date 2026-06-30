@@ -682,6 +682,10 @@ export function popularControles() {
 
   if (!selectOrigem || !selectDestino) return
 
+  // Limpa opções anteriores para evitar duplicação quando o usuário faz múltiplas requisições
+  selectOrigem.innerHTML = ''
+  selectDestino.innerHTML = ''
+
   const ativos = points.filter(p => p.ativo).sort((a, b) => {
     const numA = parseInt(a.id.replace('R', ''))
     const numB = parseInt(b.id.replace('R', ''))
@@ -733,15 +737,20 @@ export function renderNetworkLayer(transportPacket, origemId, destinoId, algorit
     algoritmo: algoritmo,
     rota: resultado.rota,
     custoTotal: resultado.custoTotal,
-    ttl: resultado.rota.length > 0 ? resultado.rota.length - 1 : 0
+    ttl: resultado.rota.length > 0 ? resultado.rota.length - 1 : 0,
+    dadosOriginais: transportPacket
   }
 
   const highlightFields = ['ipOrigem', 'ipDestino', 'algoritmo']
 
-  const fields = Object.keys(networkObj)
-  const lines = fields.map((prop, i) => {
+  // Lista explícita de campos visíveis no bloco de código
+  // (dadosOriginais não aparece no card visual — é um objeto aninhado,
+  // mas continua existindo em networkObj para a Camada de Enlace)
+  const camposVisiveis = ['ipOrigem', 'ipDestino', 'algoritmo', 'rota', 'custoTotal', 'ttl']
+
+  const lines = camposVisiveis.map((prop, i) => {
     const isHighlight = highlightFields.includes(prop)
-    const isLast = i === fields.length - 1
+    const isLast = i === camposVisiveis.length - 1
     return buildNetworkCodeLine(prop, networkObj[prop], isHighlight, isLast)
   })
 

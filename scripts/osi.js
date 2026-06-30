@@ -3,6 +3,8 @@ import * as presentation from './presentation.js'
 import * as session from './session.js'
 import * as transport from './transport.js'
 import * as network from './network.js'
+import * as datalink from './datalink.js'
+import * as physical from './physical.js'
 import { initTheme } from './theme.js'
 
 async function processPacket(packet) {
@@ -37,7 +39,17 @@ async function processPacket(packet) {
               return
             }
 
-            network.renderNetworkLayer(transportPacket, origemId, destinoId, algoritmo)
+            const networkPacket = network.renderNetworkLayer(transportPacket, origemId, destinoId, algoritmo)
+
+            if (networkPacket && Array.isArray(networkPacket.rota) && networkPacket.rota.length > 0) {
+              const frame = datalink.renderDataLinkLayer(networkPacket)
+              if (frame) {
+                physical.renderPhysicalLayer(frame)
+              }
+            } else {
+              datalink.clearDataLinkLayer()
+              physical.clearPhysicalLayer()
+            }
           })
         }
       }
@@ -71,6 +83,8 @@ function handleRequest(event) {
   session.clearSessionLayer()
   transport.clearTransportLayer()
   network.clearNetworkLayer()
+  datalink.clearDataLinkLayer()
+  physical.clearPhysicalLayer()
   presentation.renderProtocolName(application.getProtocolLabel(protocolType))
 
   if (protocolType === 'email') {
