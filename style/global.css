@@ -105,6 +105,34 @@ html {
   overflow-x: hidden;
 }
 
+/* Transição suave de cores ao trocar de tema.
+   Usa a classe .theme-changing (adicionada por theme.js durante a troca)
+   para ativar transições apenas quando necessário — evita conflitos com
+   animações existentes (slideUp, pulse, dotBounce etc.) e melhora performance. */
+html.theme-changing,
+html.theme-changing *,
+html.theme-changing *::before,
+html.theme-changing *::after {
+  transition:
+    background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    text-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    filter 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Exceções: elementos que nunca devem transicionar cores */
+html.theme-changing canvas,
+html.theme-changing .theme-transition-overlay,
+html.theme-changing .cyber-grid,
+html.theme-changing .cyber-scanline,
+html.theme-changing [class*="pulse"],
+html.theme-changing .panel-dot {
+  transition: none !important;
+}
+
 body {
   position: relative;
   min-height: 100vh;

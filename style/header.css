@@ -120,26 +120,286 @@
   }
 }
 
+/* ===== Theme Switcher — Redesenhado ===== */
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.theme-switcher-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.theme-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  user-select: none;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.theme-switcher-container:hover .theme-label {
+  opacity: 1;
+}
+
 .theme-switcher {
   display: flex;
-  gap: 6px;
+  gap: 0;
   align-items: center;
-}
-
-.theme-btn {
+  position: relative;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-  color: var(--color-text-muted);
+  border-radius: 12px;
+  padding: 3px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease, background 0.4s ease;
 }
 
-.theme-btn:hover,
-.theme-btn.active {
+.theme-switcher:hover {
   border-color: var(--color-accent);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-color);
+}
+
+/* Indicador deslizante (slider) */
+.theme-slider {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  height: calc(100% - 6px);
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  opacity: 0.15;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.4s ease, opacity 0.3s ease;
+  z-index: 0;
+  pointer-events: none;
+  box-shadow: 0 0 12px var(--color-accent);
+}
+
+.theme-switcher:hover .theme-slider {
+  opacity: 0.22;
+}
+
+/* Botão de tema individual */
+.theme-btn {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.theme-btn-icon {
+  font-size: 0.95rem;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.theme-btn-name {
+  font-family: var(--font-cyber);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  transition: color 0.35s ease, text-shadow 0.35s ease;
+}
+
+/* Hover no botão */
+.theme-btn:hover {
+  color: var(--color-text);
+}
+
+.theme-btn:hover .theme-btn-icon {
+  transform: scale(1.2) translateY(-1px);
+  filter: drop-shadow(0 0 4px var(--color-accent));
+}
+
+.theme-btn:hover .theme-btn-name {
   color: var(--color-accent);
-  box-shadow: 0 0 8px var(--border-color);
+}
+
+/* Botão ativo */
+.theme-btn.active {
+  color: var(--color-accent);
+}
+
+.theme-btn.active .theme-btn-icon {
+  filter: drop-shadow(0 0 6px var(--color-accent));
+  animation: theme-icon-glow 2s ease-in-out infinite alternate;
+}
+
+.theme-btn.active .theme-btn-name {
+  color: var(--color-accent);
+  text-shadow: 0 0 8px var(--color-accent);
+}
+
+/* Click feedback */
+.theme-btn:active .theme-btn-icon {
+  transform: scale(0.9);
+}
+
+@keyframes theme-icon-glow {
+  from {
+    filter: drop-shadow(0 0 4px var(--color-accent));
+  }
+  to {
+    filter: drop-shadow(0 0 10px var(--color-accent));
+  }
+}
+
+/* ===== Flash Overlay de Transição Cinematográfica ===== */
+.theme-transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 99999;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--flash-x) var(--flash-y),
+    var(--flash-color) 0%,
+    var(--flash-glow) 25%,
+    var(--flash-bg) 60%,
+    transparent 100%
+  );
+  opacity: 0;
+  transform: scale(0);
+  transform-origin: var(--flash-x) var(--flash-y);
+  mix-blend-mode: screen;
+}
+
+.theme-transition-overlay.expanding {
+  opacity: 1;
+  transform: scale(3.5);
+  transition: transform 0.45s cubic-bezier(0.1, 0.8, 0.25, 1), opacity 0.2s ease;
+}
+
+.theme-transition-overlay.fading {
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* Anel de expansão de energia (Ring) */
+.theme-transition-ring {
+  position: fixed;
+  top: var(--ring-y);
+  left: var(--ring-x);
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--ring-color);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  z-index: 100000;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 0 15px var(--ring-color), inset 0 0 15px var(--ring-color);
+}
+
+.theme-transition-ring.pulsing {
+  animation: ring-expand 0.45s cubic-bezier(0.1, 0.8, 0.25, 1) forwards;
+}
+
+.theme-transition-ring.fading {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes ring-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(15);
+    opacity: 0;
+  }
+}
+
+/* Partículas/Fagulhas de Brilho (Sparkles) */
+.theme-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100000;
+  pointer-events: none;
+}
+
+.theme-particle {
+  position: absolute;
+  top: var(--py);
+  left: var(--px);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--particle-color);
+  box-shadow: 0 0 8px var(--particle-color);
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0;
+}
+
+.theme-particles.active .theme-particle {
+  animation: particle-fly 0.6s cubic-bezier(0.25, 1, 0.5, 1) var(--delay) forwards;
+}
+
+.theme-particles.fading {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+@keyframes particle-fly {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* ===== Responsividade do Theme Switcher ===== */
+@media (max-width: 768px) {
+  .header-right {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .theme-switcher-container {
+    gap: 0.3rem;
+  }
+
+  .theme-btn-name {
+    display: none;
+  }
+
+  .theme-btn {
+    padding: 0.4rem 0.6rem;
+  }
+
+  .theme-btn-icon {
+    font-size: 1.1rem;
+  }
 }

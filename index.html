@@ -30,17 +30,27 @@
         <p class="subtitle">Laboratório de Redes & Segurança Cibernética com web / IFPE / Professor Gleidson</p>
       </div>
     </div>
-    <div class="header-right" style="display: flex; align-items: center; gap: 1.5rem;">
+    <div class="header-right">
       <div class="user-status-badge">
         <span class="pulse-led"></span>
         <p class="user"></p>
       </div>
-      <div class="theme-switcher-container" style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem;">
-        <span class="theme-label" style="font-size: 0.65rem; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px; user-select: none;">Temas de cores</span>
+      <div class="theme-switcher-container">
+        <span class="theme-label">Tema</span>
         <div class="theme-switcher">
-          <button class="theme-btn active" data-theme="cyber" title="Tema Cyber">⚡</button>
-          <button class="theme-btn" data-theme="dark" title="Tema Dark">🌑</button>
-          <button class="theme-btn" data-theme="light" title="Tema Light">☀️</button>
+          <div class="theme-slider"></div>
+          <button class="theme-btn active" data-theme="cyber" title="Cyber Neon">
+            <span class="theme-btn-icon">⚡</span>
+            <span class="theme-btn-name">Cyber</span>
+          </button>
+          <button class="theme-btn" data-theme="dark" title="Dark Mode">
+            <span class="theme-btn-icon">🌑</span>
+            <span class="theme-btn-name">Dark</span>
+          </button>
+          <button class="theme-btn" data-theme="light" title="Light Mode">
+            <span class="theme-btn-icon">☀️</span>
+            <span class="theme-btn-name">Light</span>
+          </button>
         </div>
       </div>
     </div>
